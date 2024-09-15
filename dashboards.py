@@ -2,7 +2,6 @@ import streamlit as st
 import pandas as pd 
 import plotly.express as px 
 import openpyxl
-# import locale
 import xlrd
 
 def categorizar_direcao_16(dict_direcoes, graus):
@@ -39,7 +38,6 @@ def categorizar_direcao_16(dict_direcoes, graus):
     elif 326.25 <= graus < 348.75:
         dict_direcoes['NNO'] += 1
 
-# locale.setlocale(locale.LC_TIME, 'pt_BR.UTF-8')
 st.set_page_config(layout="wide")
 
 st.write("Análise de dados metereológicos")
@@ -62,16 +60,29 @@ if upload_file is not None and ferramenta != '':
         df[coluna] = df[coluna].str.replace(',', '.').astype(float)
         df[coluna] = pd.to_numeric(df[coluna], errors='coerce')
 
-    # print(df.dtypes)
-
     #formatando data e hora
     df["Data"] = pd.to_datetime(df["Data"], format='%d/%m/%Y')
     df=df.sort_values("Data")
 
     df['Hora'] = pd.to_datetime(df['Hora'], format='%H:%M').dt.time
 
+    meses_pt = {
+    'January': 'Janeiro',
+    'February': 'Fevereiro',
+    'March': 'Março',
+    'April': 'Abril',
+    'May': 'Maio',
+    'June': 'Junho',
+    'July': 'Julho',
+    'August': 'Agosto',
+    'September': 'Setembro',
+    'October': 'Outubro',
+    'November': 'Novembro',
+    'December': 'Dezembro'
+    }
     #caixa de seleção
-    df['Month'] = df['Data'].dt.strftime('%B de %Y') #%B de %Y
+    df['Month'] = df['Data'].dt.strftime('%B de %Y').str.replace('%B', lambda x: meses_pt[x.group()])
+
     month = st.sidebar.selectbox("Mês", df["Month"].unique())
 
     df['Day'] = df['Data'].dt.strftime('%d')
@@ -82,10 +93,8 @@ if upload_file is not None and ferramenta != '':
     #ordenar por hora
     dados_filtrados = dados_filtrados.sort_values('Hora')
 
-
     # Criando um novo DataFrame sem as colunas a serem ocultadas
     colunas_a_ocultar = ['Month', 'Day', 'Bateria (V)', 'Temperatura Interna (ºC)']
-
     st.dataframe(dados_filtrados.iloc[:, list(range(0, 13))+ [15]])
 
     for coluna in df.iloc[:, list(range(2, 6)) + [7, 9, 10, 12, 15, 11]]: #falta em graus, 6, 8, 11
