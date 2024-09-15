@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd 
 import plotly.express as px 
 import openpyxl
-import locale
+# import locale
 import xlrd
 
 def categorizar_direcao_16(dict_direcoes, graus):
@@ -39,8 +39,7 @@ def categorizar_direcao_16(dict_direcoes, graus):
     elif 326.25 <= graus < 348.75:
         dict_direcoes['NNO'] += 1
 
-
-locale.setlocale(locale.LC_TIME, 'pt_BR.UTF-8')
+# locale.setlocale(locale.LC_TIME, 'pt_BR.UTF-8')
 st.set_page_config(layout="wide")
 
 st.write("Análise de dados metereológicos")
