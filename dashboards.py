@@ -114,7 +114,7 @@ if upload_file is not None and ferramenta != '':
     'November de 2024': 'Novembro de 2024',
     'December de 2024': 'Dezembro de 2024'
     }
-    
+
     #caixa de seleção
     df['Month2'] = df['Data'].dt.strftime('%B de %Y')
     df['Month'] = df['Month2'].replace(meses_pt, regex=True)
@@ -150,6 +150,7 @@ if upload_file is not None and ferramenta != '':
         else:
             col1, col2 = st.columns(2) #divide a tela em 2 
 
+            
             with col1:
                 fig3 = px.line(dados_filtrados, x='Hora', y=df[coluna].name, 
                             title=f'{df[coluna].name} - {day} de {month}',
@@ -225,7 +226,7 @@ if upload_file is not None and ferramenta != '':
                     df2['Frequencia: '] = (round((df2['Frequencia'] / total) * 100, 2))
 
                     colors = ['lightblue', 'blue', 'purple', 'green', 'yellow', 'orange', 'red']
-                    fig = px.bar_polar(df2, r="Frequencia: ", theta="Direção",
+                    fig = px.bar_polar(dados_filtrados, r="Frequencia: ", theta="Direção",
                                     color="Velocidade",
                                     color_discrete_sequence=colors,
                                     template="plotly_white",
