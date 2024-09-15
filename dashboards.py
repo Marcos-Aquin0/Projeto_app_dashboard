@@ -67,22 +67,22 @@ if upload_file is not None and ferramenta != '':
     df['Hora'] = pd.to_datetime(df['Hora'], format='%H:%M').dt.time
 
     meses_pt = {
-    'January': 'Janeiro',
-    'February': 'Fevereiro',
-    'March': 'Março',
-    'April': 'Abril',
-    'May': 'Maio',
-    'June': 'Junho',
-    'July': 'Julho',
-    'August': 'Agosto',
-    'September': 'Setembro',
-    'October': 'Outubro',
-    'November': 'Novembro',
-    'December': 'Dezembro'
+    'January de 2024': 'Janeiro de 2024',
+    'February de 2024': 'Fevereiro de 2024',
+    'March de 2024': 'Março de 2024',
+    'April de 2024': 'Abril de 2024',
+    'May de 2024': 'Maio de 2024',
+    'June de 2024': 'Junho de 2024',
+    'July de 2024': 'Julho de 2024',
+    'August de 2024': 'Agosto de 2024',
+    'September de 2024': 'Setembro de 2024',
+    'October de 2024': 'Outubro de 2024',
+    'November de 2024': 'Novembro de 2024',
+    'December de 2024': 'Dezembro de 2024'
     }
     #caixa de seleção
-    df['Month'] = df['Data'].dt.strftime('%B de %Y').str.replace('%B', lambda x: meses_pt[x.group()], regex=True)
-
+    df['Month2'] = df['Data'].dt.strftime('%B de %Y')
+    df['Month'] = df['Month2'].replace(meses_pt, regex=True)
     month = st.sidebar.selectbox("Mês", df["Month"].unique())
 
     df['Day'] = df['Data'].dt.strftime('%d')
