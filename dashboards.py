@@ -81,7 +81,7 @@ if upload_file is not None and ferramenta != '':
     'December': 'Dezembro'
     }
     #caixa de seleção
-    df['Month'] = df['Data'].dt.strftime('%B de %Y').str.replace('%B', lambda x: meses_pt[x.group()])
+    df['Month'] = df['Data'].dt.strftime('%B de %Y').str.replace('%B', lambda x: meses_pt[x.group()], regex=True)
 
     month = st.sidebar.selectbox("Mês", df["Month"].unique())
 
