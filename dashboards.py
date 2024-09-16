@@ -257,7 +257,7 @@ if upload_file is not None and ferramenta != '':
                                     color="Velocidade",
                                     color_discrete_sequence=colors,
                                     template="plotly_white",
-                                    title=f"Rosa dos Ventos {df[coluna].name} - {horas_6}",
+                                    title=f"Rosa dos Ventos - {horas_6}",
                                     barmode='stack')
 
                     st.plotly_chart(fig, use_container_width=True)    
