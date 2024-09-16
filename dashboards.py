@@ -4,6 +4,8 @@ import plotly.express as px
 import openpyxl
 import xlrd
 import copy
+import numpy as np
+from dateutil.parser import parse
 
 def categorizar_direcao_16(dict_direcoes, graus, velocidade):
     if 0 <= graus < 11.25 or 348.75 <= graus <= 360:
@@ -163,17 +165,28 @@ if upload_file is not None and ferramenta != '':
                     
                     dict_vel = {'Frequencia': 0, 'Calmaria': 0, '0.5 - 2.1': 0, '2.1 - 3.6': 0, '3.6 - 5.7': 0, '5.7 - 8.8': 0, '8.8 - 11.1': 0, '>= 11.1': 0}
                     dict_direcoes = {'N': copy.deepcopy(dict_vel), 'NNE': copy.deepcopy(dict_vel), 'NE': copy.deepcopy(dict_vel), 'ENE': copy.deepcopy(dict_vel), 'E': copy.deepcopy(dict_vel), 'ESE': copy.deepcopy(dict_vel), 'SE': copy.deepcopy(dict_vel), 'SSE': copy.deepcopy(dict_vel),
-                                         'S': copy.deepcopy(dict_vel), 'SSO': copy.deepcopy(dict_vel), 'SO': copy.deepcopy(dict_vel), 'OSO': copy.deepcopy(dict_vel), 'O': copy.deepcopy(dict_vel), 'ONO': copy.deepcopy(dict_vel), 'NO': copy.deepcopy(dict_vel), 'NNO': copy.deepcopy(dict_vel)}
+                                     'S': copy.deepcopy(dict_vel), 'SSO': copy.deepcopy(dict_vel), 'SO': copy.deepcopy(dict_vel), 'OSO': copy.deepcopy(dict_vel), 'O': copy.deepcopy(dict_vel), 'ONO': copy.deepcopy(dict_vel), 'NO': copy.deepcopy(dict_vel), 'NNO': copy.deepcopy(dict_vel)}
                     total = 0
 
+                    dados_filtrados['Data_str'] = dados_filtrados['Data'].astype(str)
+                    dados_filtrados['Hora_str'] = dados_filtrados['Hora'].astype(str) 
+                    
+                    linha_00h = dados_filtrados[dados_filtrados['Hora_str'] == '00:00:00']
+                    if not linha_00h.empty:
+                        indice_00h = linha_00h.index[0]  # Pega o primeiro índice, caso haja múltiplas linhas
+                        
+                    else:
+                        st.warning("Nenhuma linha com hora 00:00:00 encontrada.")
+                    
                     if 'Dia inteiro' in horas_6:
                         dict_vel = {'Frequencia': 0, 'Calmaria': 0, '0.5 - 2.1': 0, '2.1 - 3.6': 0, '3.6 - 5.7': 0, '5.7 - 8.8': 0, '8.8 - 11.1': 0, '>= 11.1': 0}
                         dict_direcoes = {'N': copy.deepcopy(dict_vel), 'NNE': copy.deepcopy(dict_vel), 'NE': copy.deepcopy(dict_vel), 'ENE': copy.deepcopy(dict_vel), 'E': copy.deepcopy(dict_vel), 'ESE': copy.deepcopy(dict_vel), 'SE': copy.deepcopy(dict_vel), 'SSE': copy.deepcopy(dict_vel),
                                          'S': copy.deepcopy(dict_vel), 'SSO': copy.deepcopy(dict_vel), 'SO': copy.deepcopy(dict_vel), 'OSO': copy.deepcopy(dict_vel), 'O': copy.deepcopy(dict_vel), 'ONO': copy.deepcopy(dict_vel), 'NO': copy.deepcopy(dict_vel), 'NNO': copy.deepcopy(dict_vel)}
                         total = 0
 
-                        for indice, linha in enumerate(dados_filtrados[coluna]):
-                            categorizar_direcao_16(dict_direcoes, linha, dados_filtrados['Velocidade do Vento (m/s)'][indice])
+
+                        for indice, linha in enumerate(dados_filtrados[coluna][0:96]):
+                            categorizar_direcao_16(dict_direcoes, linha, dados_filtrados['Velocidade do Vento (m/s)'][indice_00h+indice])
                             total +=1   
 
                     elif '0h-5h45' in horas_6:
@@ -183,7 +196,7 @@ if upload_file is not None and ferramenta != '':
                         total = 0
 
                         for indice, linha in enumerate(dados_filtrados[coluna][0:24]):
-                            categorizar_direcao_16(dict_direcoes, linha, dados_filtrados['Velocidade do Vento (m/s)'][indice])
+                            categorizar_direcao_16(dict_direcoes, linha, dados_filtrados['Velocidade do Vento (m/s)'][indice_00h+indice])
                             total +=1 
 
                     elif '6h-11h45' in horas_6:
@@ -193,7 +206,7 @@ if upload_file is not None and ferramenta != '':
                         total = 0
 
                         for indice, linha in enumerate(dados_filtrados[coluna][24:48]):
-                            categorizar_direcao_16(dict_direcoes, linha, dados_filtrados['Velocidade do Vento (m/s)'][indice+24])
+                            categorizar_direcao_16(dict_direcoes, linha, dados_filtrados['Velocidade do Vento (m/s)'][indice_00h+indice+24])
                             total +=1 
 
                     elif '12h-17h45' in horas_6:
@@ -203,7 +216,7 @@ if upload_file is not None and ferramenta != '':
                         total = 0
 
                         for indice, linha in enumerate(dados_filtrados[coluna][48:72]):
-                            categorizar_direcao_16(dict_direcoes, linha, dados_filtrados['Velocidade do Vento (m/s)'][indice+48])
+                            categorizar_direcao_16(dict_direcoes, linha, dados_filtrados['Velocidade do Vento (m/s)'][indice_00h+indice+48])
                             total +=1 
 
                     elif '18h-23h45' in horas_6:
@@ -213,7 +226,7 @@ if upload_file is not None and ferramenta != '':
                         total = 0
 
                         for indice, linha in enumerate(dados_filtrados[coluna][72:96]):
-                            categorizar_direcao_16(dict_direcoes, linha, dados_filtrados['Velocidade do Vento (m/s)'][indice+72])
+                            categorizar_direcao_16(dict_direcoes, linha, dados_filtrados['Velocidade do Vento (m/s)'][indice_00h+indice+72])
                             total +=1             
                     
                     data = []
@@ -226,7 +239,7 @@ if upload_file is not None and ferramenta != '':
                     df2['Frequencia: '] = (round((df2['Frequencia'] / total) * 100, 2))
 
                     colors = ['lightblue', 'blue', 'purple', 'green', 'yellow', 'orange', 'red']
-                    fig = px.bar_polar(dados_filtrados, r="Frequencia: ", theta="Direção",
+                    fig = px.bar_polar(df2, r="Frequencia: ", theta="Direção",
                                     color="Velocidade",
                                     color_discrete_sequence=colors,
                                     template="plotly_white",
