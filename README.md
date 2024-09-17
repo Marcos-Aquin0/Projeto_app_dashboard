@@ -12,7 +12,7 @@ Desenvolver um site com streamlit para visualização de gráficos.
 <br>
 
 <p align="center">
-  <img alt="imagem de exemplo" src="./exemplo.jpg" width="100%">
+  <img alt="imagem de exemplo" src="https://github.com/Marcos-Aquin0/Projeto_app_dashboard/blob/main/exemplo.jpg" width="100%">
 </p>
 
 ## 🚀 Tecnologias
