@@ -1,6 +1,7 @@
 streamlit 
 pandas 
-plotly.express 
+plotly.express
+plotly.graph_objects 
 openpyxl
 xlrd
 numpy

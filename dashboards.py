@@ -1,6 +1,7 @@
 import streamlit as st 
 import pandas as pd 
-import plotly.express as px 
+import plotly.express as px
+import plotly.graph_objects as go 
 import openpyxl
 import xlrd
 import copy
@@ -73,6 +74,12 @@ def categorizar_velocidade(dict_velocidade, velocidade):
         dict_velocidade['8.8 - 11.1'] += 1
     elif velocidade >= 11.1:
         dict_velocidade['>= 11.1'] += 1
+
+def velocidade_max(coluna_velocidade):
+    vmax = 1
+    for linha in coluna_velocidade:
+        if linha > vmax:
+            vmax = linha
 
 #definição inicial do layout da página
 st.set_page_config(layout="wide")
@@ -147,7 +154,7 @@ if upload_file is not None and ferramenta != '':
             fig_date = px.line(dados_filtrados, x='Hora', y=df[coluna].name, 
                             title=f'{df[coluna].name} do Dia {day} de {month}',
                             markers=True)
-            
+
             st.plotly_chart(fig_date, use_container_width=True)
 
     #informações do dataframe em graus
@@ -156,13 +163,44 @@ if upload_file is not None and ferramenta != '':
             st.warning("Não há dados para o dia selecionado.")
         else:
             col1, col2 = st.columns(2) #divide a tela em 2 
-
+            
             with col1:
+                #gráfico com dois eixos y
+                fig = go.Figure()
+
+                fig.add_trace(
+                    go.Scatter(
+                        x=dados_filtrados['Hora'], y=dados_filtrados['Velocidade do Vento (m/s)'], mode='lines+markers',
+                        name='Velocidade do Vento (m/s)',
+                        hovertext=[f'Hora = {t.strftime("%H:%M")}<br>Velocidade = {v} m/s' for t, v in zip(dados_filtrados['Hora'], dados_filtrados['Velocidade do Vento (m/s)'])],
+                        yaxis='y1', hoverinfo='text')
+                )
+                
+                fig.add_trace(
+                    go.Scatter(
+                        x=dados_filtrados['Hora'], y=dados_filtrados[coluna], mode='lines+markers',
+                        name=dados_filtrados[coluna].name,
+                        hovertext=[f'Hora = {t.strftime("%H:%M")}<br>Graus = {v}º' for t, v in zip(dados_filtrados['Hora'], dados_filtrados[coluna])],
+                        yaxis='y2', hoverinfo='text')
+                )
+
+                # fig.add_scatter(x=dados_filtrados['Hora'], y=dados_filtrados[coluna], mode='lines+markers', 
+                #                 name='Direção do Vento', yaxis="y2", showlegend=True)
+
+                # Atualizar o layout para adicionar o eixo y2
+                fig.update_layout(
+                    title=f"Velocidade e Direção do Vento do dia {day} de {month}",
+                    xaxis=dict(title='Hora'),
+                    yaxis=dict(title='Velocidade do Vento (m/s)', range=[0, velocidade_max(dados_filtrados['Velocidade do Vento (m/s)'])]),  # Escala para velocidade
+                    yaxis2=dict(title='Direção do Vento (graus)', range=[0, 360], overlaying='y', side='right'),  # Eixo secundário
+                    legend=dict(x=0.5, y=1.01, xanchor='center', yanchor='bottom', orientation='h')
+                )
+              
                 #primeiro o gráfico de linha correspondente
-                fig3 = px.line(dados_filtrados, x='Hora', y=df[coluna].name, 
-                            title=f'{df[coluna].name} - {day} de {month}',
-                            markers=True)
-                st.plotly_chart(fig3, use_container_width=True)
+                # fig = px.line(dados_filtrados, x='Hora', y=df[coluna].name, 
+                #             title=f'{df[coluna].name} - {day} de {month}',
+                #             markers=True)
+                st.plotly_chart(fig, use_container_width=True)
 
             #plotagem da rosa dos ventos com 16 direções
             with col2:
