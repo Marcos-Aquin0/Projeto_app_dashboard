@@ -261,7 +261,8 @@ if upload_file is not None and ferramenta != '':
                     else:
                         st.warning(f"Nenhuma linha com hora 00:00:00 encontrada. Confira se o dia {day} de {month} possui todos os horários (desde 00h00 até 23h45)")
     
-        # Multiselect para escolher múltiplas opções
+    # Multiselect para escolher múltiplas opções
+    
     options_dir = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSO', 'SO', 'OSO', 'O', 'ONO', 'NO', 'NNO']
     selected_options = st.multiselect("Direções", options_dir)
 
