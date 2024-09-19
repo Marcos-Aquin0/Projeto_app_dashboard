@@ -8,55 +8,24 @@ import copy
 import numpy as np
 
 #função para categorizar os dados: direção do vento em graus na rosa dos ventos
-def categorizar_direcao_16(dict_direcoes, graus, velocidade):
-    if 0 <= graus < 11.25 or 348.75 <= graus <= 360:
-        dict_direcoes['N']['Frequencia'] += 1
-        categorizar_velocidade(dict_direcoes['N'], velocidade)
-    elif 11.25 <= graus < 33.75:
-        dict_direcoes['NNE']['Frequencia'] += 1
-        categorizar_velocidade(dict_direcoes['NNE'], velocidade)
-    elif 33.75 <= graus < 56.25:
-        dict_direcoes['NE']['Frequencia'] += 1
-        categorizar_velocidade(dict_direcoes['NE'], velocidade)
-    elif 56.25 <= graus < 78.75:
-        dict_direcoes['ENE']['Frequencia'] += 1
-        categorizar_velocidade(dict_direcoes['ENE'], velocidade)
-    elif 78.75 <= graus < 101.25:
-        dict_direcoes['E']['Frequencia'] += 1
-        categorizar_velocidade(dict_direcoes['E'], velocidade)
-    elif 101.25 <= graus < 123.75:
-        dict_direcoes['ESE']['Frequencia'] += 1
-        categorizar_velocidade(dict_direcoes['ESE'], velocidade)
-    elif 123.75 <= graus < 146.25:
-        dict_direcoes['SE']['Frequencia'] += 1
-        categorizar_velocidade(dict_direcoes['SE'], velocidade)
-    elif 146.25 <= graus < 168.75:
-        dict_direcoes['SSE']['Frequencia'] += 1
-        categorizar_velocidade(dict_direcoes['SSE'], velocidade)
-    elif 168.75 <= graus < 191.25:
-        dict_direcoes['S']['Frequencia'] += 1
-        categorizar_velocidade(dict_direcoes['S'], velocidade)
-    elif 191.25 <= graus < 213.75:
-        dict_direcoes['SSO']['Frequencia'] += 1
-        categorizar_velocidade(dict_direcoes['SSO'], velocidade)
-    elif 213.75 <= graus < 236.25:
-        dict_direcoes['SO']['Frequencia'] += 1
-        categorizar_velocidade(dict_direcoes['SO'], velocidade)
-    elif 236.25 <= graus < 258.75:
-        dict_direcoes['OSO']['Frequencia'] += 1
-        categorizar_velocidade(dict_direcoes['OSO'], velocidade)
-    elif 258.75 <= graus < 281.25:
-        dict_direcoes['O']['Frequencia'] += 1
-        categorizar_velocidade(dict_direcoes['O'], velocidade)
-    elif 281.25 <= graus < 303.75:
-        dict_direcoes['ONO']['Frequencia'] += 1
-        categorizar_velocidade(dict_direcoes['ONO'], velocidade)
-    elif 303.75 <= graus < 326.25:
-        dict_direcoes['NO']['Frequencia'] += 1
-        categorizar_velocidade(dict_direcoes['NO'], velocidade)
-    elif 326.25 <= graus < 348.75:
-        dict_direcoes['NNO']['Frequencia'] += 1
-        categorizar_velocidade(dict_direcoes['NNO'], velocidade)
+def categorizar_direcao_16(dict_direcoes, graus, velocidade, indice):
+    # Lista de direções com seus intervalos de graus
+    direcoes = [
+        ('N', (0, 11.25)), ('N', (348.75, 360)), ('NNE', (11.25, 33.75)), ('NE', (33.75, 56.25)),
+        ('ENE', (56.25, 78.75)), ('E', (78.75, 101.25)), ('ESE', (101.25, 123.75)),
+        ('SE', (123.75, 146.25)), ('SSE', (146.25, 168.75)), ('S', (168.75, 191.25)),
+        ('SSO', (191.25, 213.75)), ('SO', (213.75, 236.25)), ('OSO', (236.25, 258.75)),
+        ('O', (258.75, 281.25)), ('ONO', (281.25, 303.75)), ('NO', (303.75, 326.25)),
+        ('NNO', (326.25, 348.75))]
+
+    # Itera sobre a lista de direções e verifica o intervalo correspondente aos graus
+    for direcao, (min_graus, max_graus) in direcoes:
+        if min_graus <= graus < max_graus:
+            dict_direcoes[direcao]['Frequencia'] += 1
+            if indice not in dict_direcoes[direcao]['Indices']:
+                dict_direcoes[direcao]['Indices'].append(indice)
+            categorizar_velocidade(dict_direcoes[direcao], velocidade)
+            break  # Sai do loop ao encontrar a direção correta
 
 #função para categorizar a velocidade do vento de acordo com a direção
 def categorizar_velocidade(dict_velocidade, velocidade):
@@ -163,7 +132,6 @@ if upload_file is not None and ferramenta != '':
             st.warning("Não há dados para o dia selecionado.")
         else:
             col1, col2 = st.columns(2) #divide a tela em 2 
-            
             with col1:
                 #gráfico com dois eixos y
                 fig = go.Figure()
@@ -184,9 +152,6 @@ if upload_file is not None and ferramenta != '':
                         yaxis='y2', hoverinfo='text')
                 )
 
-                # fig.add_scatter(x=dados_filtrados['Hora'], y=dados_filtrados[coluna], mode='lines+markers', 
-                #                 name='Direção do Vento', yaxis="y2", showlegend=True)
-
                 # Atualizar o layout para adicionar o eixo y2
                 fig.update_layout(
                     title=f"Velocidade e Direção do Vento do dia {day} de {month}",
@@ -196,10 +161,6 @@ if upload_file is not None and ferramenta != '':
                     legend=dict(x=0.5, y=1.01, xanchor='center', yanchor='bottom', orientation='h')
                 )
               
-                #primeiro o gráfico de linha correspondente
-                # fig = px.line(dados_filtrados, x='Hora', y=df[coluna].name, 
-                #             title=f'{df[coluna].name} - {day} de {month}',
-                #             markers=True)
                 st.plotly_chart(fig, use_container_width=True)
 
             #plotagem da rosa dos ventos com 16 direções
@@ -210,10 +171,10 @@ if upload_file is not None and ferramenta != '':
                     
                     #cada direção recebe um dicionário de velocidades
                     #deepcopy é recomendado para elementos mais complexos, pois garante que todos os níveis da estrutura sejam copiados de forma independente.
-                    dict_vel = {'Frequencia': 0, 'Calmaria': 0, '0.5 - 2.1': 0, '2.1 - 3.6': 0, '3.6 - 5.7': 0, '5.7 - 8.8': 0, '8.8 - 11.1': 0, '>= 11.1': 0}
+                    dict_vel = {'Frequencia': 0, 'Calmaria': 0, '0.5 - 2.1': 0, '2.1 - 3.6': 0, '3.6 - 5.7': 0, '5.7 - 8.8': 0, '8.8 - 11.1': 0, '>= 11.1': 0, 'Indices':[]}
                     dict_direcoes = {'N': copy.deepcopy(dict_vel), 'NNE': copy.deepcopy(dict_vel), 'NE': copy.deepcopy(dict_vel), 'ENE': copy.deepcopy(dict_vel), 'E': copy.deepcopy(dict_vel), 'ESE': copy.deepcopy(dict_vel), 'SE': copy.deepcopy(dict_vel), 'SSE': copy.deepcopy(dict_vel),
                                      'S': copy.deepcopy(dict_vel), 'SSO': copy.deepcopy(dict_vel), 'SO': copy.deepcopy(dict_vel), 'OSO': copy.deepcopy(dict_vel), 'O': copy.deepcopy(dict_vel), 'ONO': copy.deepcopy(dict_vel), 'NO': copy.deepcopy(dict_vel), 'NNO': copy.deepcopy(dict_vel)}
-                    total = 0
+                    total = 0   
 
                     dados_filtrados['Data_str'] = dados_filtrados['Data'].astype(str)
                     dados_filtrados['Hora_str'] = dados_filtrados['Hora'].astype(str) 
@@ -223,82 +184,115 @@ if upload_file is not None and ferramenta != '':
                     if not linha_00h.empty:
                         indice_00h = linha_00h.index[0]  # Pega o primeiro índice, caso haja múltiplas linhas
                         
+                        if 'Dia inteiro' in horas_6:
+                            dict_vel = {'Frequencia': 0, 'Calmaria': 0, '0.5 - 2.1': 0, '2.1 - 3.6': 0, '3.6 - 5.7': 0, '5.7 - 8.8': 0, '8.8 - 11.1': 0, '>= 11.1': 0, 'Indices':[]}
+                            dict_direcoes = {'N': copy.deepcopy(dict_vel), 'NNE': copy.deepcopy(dict_vel), 'NE': copy.deepcopy(dict_vel), 'ENE': copy.deepcopy(dict_vel), 'E': copy.deepcopy(dict_vel), 'ESE': copy.deepcopy(dict_vel), 'SE': copy.deepcopy(dict_vel), 'SSE': copy.deepcopy(dict_vel),
+                                            'S': copy.deepcopy(dict_vel), 'SSO': copy.deepcopy(dict_vel), 'SO': copy.deepcopy(dict_vel), 'OSO': copy.deepcopy(dict_vel), 'O': copy.deepcopy(dict_vel), 'ONO': copy.deepcopy(dict_vel), 'NO': copy.deepcopy(dict_vel), 'NNO': copy.deepcopy(dict_vel)}
+                            total = 0
+
+                            for indice, linha in enumerate(dados_filtrados[coluna][0:96]):
+                                categorizar_direcao_16(dict_direcoes, linha, dados_filtrados['Velocidade do Vento (m/s)'][indice_00h+indice], indice)
+                                total +=1   
+
+                        elif '0h-5h45' in horas_6:
+                            dict_vel = {'Frequencia': 0, 'Calmaria': 0, '0.5 - 2.1': 0, '2.1 - 3.6': 0, '3.6 - 5.7': 0, '5.7 - 8.8': 0, '8.8 - 11.1': 0, '>= 11.1': 0, 'Indices':[]}
+                            dict_direcoes = {'N': copy.deepcopy(dict_vel), 'NNE': copy.deepcopy(dict_vel), 'NE': copy.deepcopy(dict_vel), 'ENE': copy.deepcopy(dict_vel), 'E': copy.deepcopy(dict_vel), 'ESE': copy.deepcopy(dict_vel), 'SE': copy.deepcopy(dict_vel), 'SSE': copy.deepcopy(dict_vel),
+                                            'S': copy.deepcopy(dict_vel), 'SSO': copy.deepcopy(dict_vel), 'SO': copy.deepcopy(dict_vel), 'OSO': copy.deepcopy(dict_vel), 'O': copy.deepcopy(dict_vel), 'ONO': copy.deepcopy(dict_vel), 'NO': copy.deepcopy(dict_vel), 'NNO': copy.deepcopy(dict_vel)}
+                            total = 0
+
+                            for indice, linha in enumerate(dados_filtrados[coluna][0:24]):
+                                categorizar_direcao_16(dict_direcoes, linha, dados_filtrados['Velocidade do Vento (m/s)'][indice_00h+indice], indice)
+                                total +=1 
+
+                        elif '6h-11h45' in horas_6:
+                            dict_vel = {'Frequencia': 0, 'Calmaria': 0, '0.5 - 2.1': 0, '2.1 - 3.6': 0, '3.6 - 5.7': 0, '5.7 - 8.8': 0, '8.8 - 11.1': 0, '>= 11.1': 0, 'Indices':[]}
+                            dict_direcoes = {'N': copy.deepcopy(dict_vel), 'NNE': copy.deepcopy(dict_vel), 'NE': copy.deepcopy(dict_vel), 'ENE': copy.deepcopy(dict_vel), 'E': copy.deepcopy(dict_vel), 'ESE': copy.deepcopy(dict_vel), 'SE': copy.deepcopy(dict_vel), 'SSE': copy.deepcopy(dict_vel),
+                                            'S': copy.deepcopy(dict_vel), 'SSO': copy.deepcopy(dict_vel), 'SO': copy.deepcopy(dict_vel), 'OSO': copy.deepcopy(dict_vel), 'O': copy.deepcopy(dict_vel), 'ONO': copy.deepcopy(dict_vel), 'NO': copy.deepcopy(dict_vel), 'NNO': copy.deepcopy(dict_vel)}
+                            total = 0
+
+                            for indice, linha in enumerate(dados_filtrados[coluna][24:48]):
+                                categorizar_direcao_16(dict_direcoes, linha, dados_filtrados['Velocidade do Vento (m/s)'][indice_00h+indice+24], indice)
+                                total +=1 
+
+                        elif '12h-17h45' in horas_6:
+                            dict_vel = {'Frequencia': 0, 'Calmaria': 0, '0.5 - 2.1': 0, '2.1 - 3.6': 0, '3.6 - 5.7': 0, '5.7 - 8.8': 0, '8.8 - 11.1': 0, '>= 11.1': 0, 'Indices':[]}
+                            dict_direcoes = {'N': copy.deepcopy(dict_vel), 'NNE': copy.deepcopy(dict_vel), 'NE': copy.deepcopy(dict_vel), 'ENE': copy.deepcopy(dict_vel), 'E': copy.deepcopy(dict_vel), 'ESE': copy.deepcopy(dict_vel), 'SE': copy.deepcopy(dict_vel), 'SSE': copy.deepcopy(dict_vel),
+                                            'S': copy.deepcopy(dict_vel), 'SSO': copy.deepcopy(dict_vel), 'SO': copy.deepcopy(dict_vel), 'OSO': copy.deepcopy(dict_vel), 'O': copy.deepcopy(dict_vel), 'ONO': copy.deepcopy(dict_vel), 'NO': copy.deepcopy(dict_vel), 'NNO': copy.deepcopy(dict_vel)}
+                            total = 0
+
+                            for indice, linha in enumerate(dados_filtrados[coluna][48:72]):
+                                categorizar_direcao_16(dict_direcoes, linha, dados_filtrados['Velocidade do Vento (m/s)'][indice_00h+indice+48], indice)
+                                total +=1 
+
+                        elif '18h-23h45' in horas_6:
+                            dict_vel = {'Frequencia': 0, 'Calmaria': 0, '0.5 - 2.1': 0, '2.1 - 3.6': 0, '3.6 - 5.7': 0, '5.7 - 8.8': 0, '8.8 - 11.1': 0, '>= 11.1': 0, 'Indices':[]}
+                            dict_direcoes = {'N': copy.deepcopy(dict_vel), 'NNE': copy.deepcopy(dict_vel), 'NE': copy.deepcopy(dict_vel), 'ENE': copy.deepcopy(dict_vel), 'E': copy.deepcopy(dict_vel), 'ESE': copy.deepcopy(dict_vel), 'SE': copy.deepcopy(dict_vel), 'SSE': copy.deepcopy(dict_vel),
+                                            'S': copy.deepcopy(dict_vel), 'SSO': copy.deepcopy(dict_vel), 'SO': copy.deepcopy(dict_vel), 'OSO': copy.deepcopy(dict_vel), 'O': copy.deepcopy(dict_vel), 'ONO': copy.deepcopy(dict_vel), 'NO': copy.deepcopy(dict_vel), 'NNO': copy.deepcopy(dict_vel)}
+                            total = 0
+
+                            for indice, linha in enumerate(dados_filtrados[coluna][72:96]):
+                                categorizar_direcao_16(dict_direcoes, linha, dados_filtrados['Velocidade do Vento (m/s)'][indice_00h+indice+72], indice)
+                                total +=1             
+                        
+                        #separando as informações de direção, velocidade e frequência para tratar como dataframe
+                        evitar = ['Frequencia', 'Indices']
+                        data = []
+                        for direcao, info in dict_direcoes.items():
+                            for velocidade, frequencia in info.items():
+                                if velocidade not in evitar:
+                                    data.append({'Direção': direcao, 'Velocidade': velocidade, 'Frequencia': frequencia})
+
+                        df2 = pd.DataFrame(data)
+                        #normalização em porcentagem da frequencia obtida de cada direção e velocidade
+                        df2['Frequencia: '] = (round((df2['Frequencia'] / total) * 100, 2))
+
+                        #cores para a legenda de velocidades
+                        colors = ['lightblue', 'blue', 'purple', 'green', 'yellow', 'orange', 'red']
+                        
+                        #rosa dos ventos é um gráfico polar, com barras
+                        fig = px.bar_polar(df2, r="Frequencia: ", theta="Direção",
+                                        color="Velocidade",
+                                        color_discrete_sequence=colors,
+                                        template="plotly_white",
+                                        title=f"Rosa dos Ventos - {horas_6}",
+                                        barmode='stack')
+
+                        st.plotly_chart(fig, use_container_width=True)
                     else:
-                        st.warning("Nenhuma linha com hora 00:00:00 encontrada.")
-                    
-                    if 'Dia inteiro' in horas_6:
-                        dict_vel = {'Frequencia': 0, 'Calmaria': 0, '0.5 - 2.1': 0, '2.1 - 3.6': 0, '3.6 - 5.7': 0, '5.7 - 8.8': 0, '8.8 - 11.1': 0, '>= 11.1': 0}
-                        dict_direcoes = {'N': copy.deepcopy(dict_vel), 'NNE': copy.deepcopy(dict_vel), 'NE': copy.deepcopy(dict_vel), 'ENE': copy.deepcopy(dict_vel), 'E': copy.deepcopy(dict_vel), 'ESE': copy.deepcopy(dict_vel), 'SE': copy.deepcopy(dict_vel), 'SSE': copy.deepcopy(dict_vel),
-                                         'S': copy.deepcopy(dict_vel), 'SSO': copy.deepcopy(dict_vel), 'SO': copy.deepcopy(dict_vel), 'OSO': copy.deepcopy(dict_vel), 'O': copy.deepcopy(dict_vel), 'ONO': copy.deepcopy(dict_vel), 'NO': copy.deepcopy(dict_vel), 'NNO': copy.deepcopy(dict_vel)}
-                        total = 0
+                        st.warning(f"Nenhuma linha com hora 00:00:00 encontrada. Confira se o dia {day} de {month} possui todos os horários (desde 00h00 até 23h45)")
+    
+        # Multiselect para escolher múltiplas opções
+    options_dir = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSO', 'SO', 'OSO', 'O', 'ONO', 'NO', 'NNO']
+    selected_options = st.multiselect("Direções", options_dir)
 
-                        for indice, linha in enumerate(dados_filtrados[coluna][0:96]):
-                            categorizar_direcao_16(dict_direcoes, linha, dados_filtrados['Velocidade do Vento (m/s)'][indice_00h+indice])
-                            total +=1   
+    for coluna in df.iloc[:, [6, 8]]:
+        if dados_filtrados.empty:
+            st.warning("Não há dados para o dia selecionado.")
+        else:
+            dict_vel = {'Frequencia': 0, 'Calmaria': 0, '0.5 - 2.1': 0, '2.1 - 3.6': 0, '3.6 - 5.7': 0, '5.7 - 8.8': 0, '8.8 - 11.1': 0, '>= 11.1': 0, 'Indices':[]}
+            dict_direcoes = {'N': copy.deepcopy(dict_vel), 'NNE': copy.deepcopy(dict_vel), 'NE': copy.deepcopy(dict_vel), 'ENE': copy.deepcopy(dict_vel), 'E': copy.deepcopy(dict_vel), 'ESE': copy.deepcopy(dict_vel), 'SE': copy.deepcopy(dict_vel), 'SSE': copy.deepcopy(dict_vel),
+                                     'S': copy.deepcopy(dict_vel), 'SSO': copy.deepcopy(dict_vel), 'SO': copy.deepcopy(dict_vel), 'OSO': copy.deepcopy(dict_vel), 'O': copy.deepcopy(dict_vel), 'ONO': copy.deepcopy(dict_vel), 'NO': copy.deepcopy(dict_vel), 'NNO': copy.deepcopy(dict_vel)}
+            total = 0
+            if not linha_00h.empty:
+            #garantir que pego o dia inteiro
+                for indice, linha in enumerate(dados_filtrados[coluna][0:96]):
+                    categorizar_direcao_16(dict_direcoes, linha, dados_filtrados['Velocidade do Vento (m/s)'][indice_00h+indice], indice)
+                    total +=1
 
-                    elif '0h-5h45' in horas_6:
-                        dict_vel = {'Frequencia': 0, 'Calmaria': 0, '0.5 - 2.1': 0, '2.1 - 3.6': 0, '3.6 - 5.7': 0, '5.7 - 8.8': 0, '8.8 - 11.1': 0, '>= 11.1': 0}
-                        dict_direcoes = {'N': copy.deepcopy(dict_vel), 'NNE': copy.deepcopy(dict_vel), 'NE': copy.deepcopy(dict_vel), 'ENE': copy.deepcopy(dict_vel), 'E': copy.deepcopy(dict_vel), 'ESE': copy.deepcopy(dict_vel), 'SE': copy.deepcopy(dict_vel), 'SSE': copy.deepcopy(dict_vel),
-                                         'S': copy.deepcopy(dict_vel), 'SSO': copy.deepcopy(dict_vel), 'SO': copy.deepcopy(dict_vel), 'OSO': copy.deepcopy(dict_vel), 'O': copy.deepcopy(dict_vel), 'ONO': copy.deepcopy(dict_vel), 'NO': copy.deepcopy(dict_vel), 'NNO': copy.deepcopy(dict_vel)}
-                        total = 0
+                if selected_options:
+                    todos_indices = []
+                    for direcao in selected_options:
+                        todos_indices.extend(dict_direcoes[direcao]["Indices"])
 
-                        for indice, linha in enumerate(dados_filtrados[coluna][0:24]):
-                            categorizar_direcao_16(dict_direcoes, linha, dados_filtrados['Velocidade do Vento (m/s)'][indice_00h+indice])
-                            total +=1 
-
-                    elif '6h-11h45' in horas_6:
-                        dict_vel = {'Frequencia': 0, 'Calmaria': 0, '0.5 - 2.1': 0, '2.1 - 3.6': 0, '3.6 - 5.7': 0, '5.7 - 8.8': 0, '8.8 - 11.1': 0, '>= 11.1': 0}
-                        dict_direcoes = {'N': copy.deepcopy(dict_vel), 'NNE': copy.deepcopy(dict_vel), 'NE': copy.deepcopy(dict_vel), 'ENE': copy.deepcopy(dict_vel), 'E': copy.deepcopy(dict_vel), 'ESE': copy.deepcopy(dict_vel), 'SE': copy.deepcopy(dict_vel), 'SSE': copy.deepcopy(dict_vel),
-                                         'S': copy.deepcopy(dict_vel), 'SSO': copy.deepcopy(dict_vel), 'SO': copy.deepcopy(dict_vel), 'OSO': copy.deepcopy(dict_vel), 'O': copy.deepcopy(dict_vel), 'ONO': copy.deepcopy(dict_vel), 'NO': copy.deepcopy(dict_vel), 'NNO': copy.deepcopy(dict_vel)}
-                        total = 0
-
-                        for indice, linha in enumerate(dados_filtrados[coluna][24:48]):
-                            categorizar_direcao_16(dict_direcoes, linha, dados_filtrados['Velocidade do Vento (m/s)'][indice_00h+indice+24])
-                            total +=1 
-
-                    elif '12h-17h45' in horas_6:
-                        dict_vel = {'Frequencia': 0, 'Calmaria': 0, '0.5 - 2.1': 0, '2.1 - 3.6': 0, '3.6 - 5.7': 0, '5.7 - 8.8': 0, '8.8 - 11.1': 0, '>= 11.1': 0}
-                        dict_direcoes = {'N': copy.deepcopy(dict_vel), 'NNE': copy.deepcopy(dict_vel), 'NE': copy.deepcopy(dict_vel), 'ENE': copy.deepcopy(dict_vel), 'E': copy.deepcopy(dict_vel), 'ESE': copy.deepcopy(dict_vel), 'SE': copy.deepcopy(dict_vel), 'SSE': copy.deepcopy(dict_vel),
-                                         'S': copy.deepcopy(dict_vel), 'SSO': copy.deepcopy(dict_vel), 'SO': copy.deepcopy(dict_vel), 'OSO': copy.deepcopy(dict_vel), 'O': copy.deepcopy(dict_vel), 'ONO': copy.deepcopy(dict_vel), 'NO': copy.deepcopy(dict_vel), 'NNO': copy.deepcopy(dict_vel)}
-                        total = 0
-
-                        for indice, linha in enumerate(dados_filtrados[coluna][48:72]):
-                            categorizar_direcao_16(dict_direcoes, linha, dados_filtrados['Velocidade do Vento (m/s)'][indice_00h+indice+48])
-                            total +=1 
-
-                    elif '18h-23h45' in horas_6:
-                        dict_vel = {'Frequencia': 0, 'Calmaria': 0, '0.5 - 2.1': 0, '2.1 - 3.6': 0, '3.6 - 5.7': 0, '5.7 - 8.8': 0, '8.8 - 11.1': 0, '>= 11.1': 0}
-                        dict_direcoes = {'N': copy.deepcopy(dict_vel), 'NNE': copy.deepcopy(dict_vel), 'NE': copy.deepcopy(dict_vel), 'ENE': copy.deepcopy(dict_vel), 'E': copy.deepcopy(dict_vel), 'ESE': copy.deepcopy(dict_vel), 'SE': copy.deepcopy(dict_vel), 'SSE': copy.deepcopy(dict_vel),
-                                         'S': copy.deepcopy(dict_vel), 'SSO': copy.deepcopy(dict_vel), 'SO': copy.deepcopy(dict_vel), 'OSO': copy.deepcopy(dict_vel), 'O': copy.deepcopy(dict_vel), 'ONO': copy.deepcopy(dict_vel), 'NO': copy.deepcopy(dict_vel), 'NNO': copy.deepcopy(dict_vel)}
-                        total = 0
-
-                        for indice, linha in enumerate(dados_filtrados[coluna][72:96]):
-                            categorizar_direcao_16(dict_direcoes, linha, dados_filtrados['Velocidade do Vento (m/s)'][indice_00h+indice+72])
-                            total +=1             
-                    
-                    #separando as informações de direção, velocidade e frequência para tratar como dataframe
-                    data = []
-                    for direcao, info in dict_direcoes.items():
-                        for velocidade, frequencia in info.items():
-                            if velocidade != 'Frequencia':
-                                data.append({'Direção': direcao, 'Velocidade': velocidade, 'Frequencia': frequencia})
-
-                    df2 = pd.DataFrame(data)
-                    #normalização em porcentagem da frequencia obtida de cada direção e velocidade
-                    df2['Frequencia: '] = (round((df2['Frequencia'] / total) * 100, 2))
-
-                    #cores para a legenda de velocidades
-                    colors = ['lightblue', 'blue', 'purple', 'green', 'yellow', 'orange', 'red']
-                    
-                    #rosa dos ventos é um gráfico polar, com barras
-                    fig = px.bar_polar(df2, r="Frequencia: ", theta="Direção",
-                                    color="Velocidade",
-                                    color_discrete_sequence=colors,
-                                    template="plotly_white",
-                                    title=f"Rosa dos Ventos - {horas_6}",
-                                    barmode='stack')
-
-                    st.plotly_chart(fig, use_container_width=True)    
-   
+                    final_filtered_df = dados_filtrados.iloc[todos_indices]            
+                    final_filtered_df = final_filtered_df.sort_values('Hora')
+                    #adicionar um filtro por intervalo (ou por direção) e mostrar em um dataframe todos os resultados com dias e horas em que apareceu aquela direção    
+                    st.write(f"Tabela Filtro por Direção - {df[coluna].name} - {day} de {month}")
+                    st.dataframe(final_filtered_df.iloc[:, [0, 1, dados_filtrados.columns.get_loc(coluna)]]) # mostra data, hora e coluna do laço 
+                else:
+                    st.warning("Selecione uma direção")
+            else:
+                st.warning(f"Nenhuma linha com hora 00:00:00 encontrada. Confira se o dia {day} de {month} possui todos os horários (desde 00h00 até 23h45)")
+    
 else:
     st.write("Aguardando a sua planilha!")
