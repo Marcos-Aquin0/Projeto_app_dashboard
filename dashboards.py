@@ -49,6 +49,7 @@ def velocidade_max(coluna_velocidade):
     for linha in coluna_velocidade:
         if linha > vmax:
             vmax = linha
+    return vmax
 
 #definição inicial do layout da página
 st.set_page_config(layout="wide")
@@ -114,7 +115,7 @@ if upload_file is not None and ferramenta != '':
     st.dataframe(dados_filtrados.iloc[:, list(range(0, 13))+ [15]])
 
     #plotagem de gráficos de linha, com marcadores para cada 15 min
-    for coluna in df.iloc[:, list(range(2, 6)) + [7, 9, 10, 12, 15, 11]]: 
+    for coluna in df.iloc[:, list(range(2, 5)) + [9, 10, 12, 15, 11]]: 
         # Verificando se há dados para plotar
         if dados_filtrados.empty:
             st.warning("Não há dados para o dia selecionado.") 
@@ -133,14 +134,23 @@ if upload_file is not None and ferramenta != '':
         else:
             col1, col2 = st.columns(2) #divide a tela em 2 
             with col1:
+                if df[coluna].name == 'Direção do Vento (Graus)':
+                    eixo_y = dados_filtrados['Velocidade do Vento (m/s)']
+                    nome_eixo = 'Velocidade do Vento (m/s)'
+                    maxima = ''
+                elif df[coluna].name == 'Direção do Vento Máxima (Graus)':
+                    eixo_y = dados_filtrados['Velocidade do Vento Máxima (m/s)']
+                    nome_eixo = 'Velocidade do Vento Máxima (m/s)'
+                    maxima = ' Máxima'
                 #gráfico com dois eixos y
+                print(df[coluna].name)
                 fig = go.Figure()
 
                 fig.add_trace(
                     go.Scatter(
-                        x=dados_filtrados['Hora'], y=dados_filtrados['Velocidade do Vento (m/s)'], mode='lines+markers',
-                        name='Velocidade do Vento (m/s)',
-                        hovertext=[f'Hora = {t.strftime("%H:%M")}<br>Velocidade = {v} m/s' for t, v in zip(dados_filtrados['Hora'], dados_filtrados['Velocidade do Vento (m/s)'])],
+                        x=dados_filtrados['Hora'], y=eixo_y, mode='lines+markers',
+                        name=nome_eixo,
+                        hovertext=[f'Hora = {t.strftime("%H:%M")}<br>Velocidade = {v} m/s' for t, v in zip(dados_filtrados['Hora'], eixo_y)],
                         yaxis='y1', hoverinfo='text')
                 )
                 
@@ -154,10 +164,10 @@ if upload_file is not None and ferramenta != '':
 
                 # Atualizar o layout para adicionar o eixo y2
                 fig.update_layout(
-                    title=f"Velocidade e Direção do Vento do dia {day} de {month}",
+                    title=f"Velocidade e Direção do Vento{maxima} do dia {day} de {month}",
                     xaxis=dict(title='Hora'),
-                    yaxis=dict(title='Velocidade do Vento (m/s)', range=[0, velocidade_max(dados_filtrados['Velocidade do Vento (m/s)'])]),  # Escala para velocidade
-                    yaxis2=dict(title='Direção do Vento (graus)', range=[0, 360], overlaying='y', side='right'),  # Eixo secundário
+                    yaxis=dict(title=nome_eixo, range=[0, velocidade_max(dados_filtrados[nome_eixo])]),  # Escala para velocidade
+                    yaxis2=dict(title=df[coluna].name, range=[0, 360], overlaying='y', side='right'),  # Eixo secundário
                     legend=dict(x=0.5, y=1.01, xanchor='center', yanchor='bottom', orientation='h')
                 )
               
