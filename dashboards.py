@@ -96,6 +96,7 @@ if upload_file is not None and ferramenta != '':
     'December de 2024': 'Dezembro de 2024'
     }
 
+    st.sidebar.write("Filtro de mês e dia para os gráficos de linha")
     #caixa de seleção
     df['Month2'] = df['Data'].dt.strftime('%B de %Y')
     df['Month'] = df['Month2'].replace(meses_pt, regex=True)
@@ -103,7 +104,6 @@ if upload_file is not None and ferramenta != '':
 
     df['Day'] = df['Data'].dt.strftime('%d')
     day = st.sidebar.selectbox("Dia", sorted(df["Day"].unique()))
-    st.sidebar.write("Filtro de mês e dia para os gráficos de linha")
     #dois filtros = mês e dia, para análise mais precisa dos dados
     dados_filtrados = df[(df["Month"] == month) & (df["Day"] == day)]
 
