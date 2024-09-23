@@ -77,9 +77,8 @@ if upload_file is not None and ferramenta != '':
 
     #formatando data e hora
     df["Data"] = pd.to_datetime(df["Data"], format='%d/%m/%Y')
-    df=df.sort_values("Data")
-
     df['Hora'] = pd.to_datetime(df['Hora'], format='%H:%M').dt.time
+    df=df.sort_values(by=["Data", "Hora"])
 
     #streamlit não reconheceu a biblioteca locale, foi necessário realizar essa conversão manualmente:
     meses_pt = {
