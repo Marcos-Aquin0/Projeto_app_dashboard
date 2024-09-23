@@ -271,11 +271,11 @@ if upload_file is not None and ferramenta != '':
                 for direcao in selected_options:
                     todos_indices.extend(dict_direcoes[direcao]["Indices"])
 
-                final_filtered_df = dados_filtrados.iloc[todos_indices]            
+                final_filtered_df = filtro3.iloc[todos_indices]            
                 final_filtered_df = final_filtered_df.sort_values('Hora')
                 #adicionar um filtro por intervalo (ou por direção) e mostrar em um dataframe todos os resultados com dias e horas em que apareceu aquela direção    
                 st.write(f"Tabela Filtro por Direção - {df[coluna].name} - {day} de {month}")
-                st.dataframe(final_filtered_df.iloc[:, [0, 1, dados_filtrados.columns.get_loc(coluna)]]) # mostra data, hora e coluna do laço 
+                st.dataframe(final_filtered_df.iloc[:, [0, 1, filtro3.columns.get_loc(coluna)]]) # mostra data, hora e coluna do laço 
 
 else:
     st.write("Aguardando a sua planilha!")
