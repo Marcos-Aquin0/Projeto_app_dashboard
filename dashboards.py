@@ -103,7 +103,7 @@ if upload_file is not None and ferramenta != '':
 
     df['Day'] = df['Data'].dt.strftime('%d')
     day = st.sidebar.selectbox("Dia", sorted(df["Day"].unique()))
-
+    st.sidebar.write("Filtro de mês e dia para os gráficos de linha")
     #dois filtros = mês e dia, para análise mais precisa dos dados
     dados_filtrados = df[(df["Month"] == month) & (df["Day"] == day)]
 
