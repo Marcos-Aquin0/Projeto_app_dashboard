@@ -27,7 +27,7 @@ Esse projeto foi desenvolvido com as seguintes tecnologias:
 
 ## 💻 Projeto
 <p>
-Visualização de dashboard de dados meteorológicos. A aplicação recebe uma planilha em específico e retorna dados filtrados por mês e dia. São gerados gráficos de linha e gráficos de linha polar como rosa dos ventos.
+Visualização de dashboard de dados meteorológicos. A aplicação recebe uma planilha em específico e retorna dados filtrados por mês e dia. São gerados gráficos de linha e gráficos de linha polar como rosa dos ventos. Utilize o arquivo de dados fictícios de exemplo (dados_exemplo.xls)
 </p>
 
 Acesse o projeto através [DESSE LINK](https://dashboard-meteorologicos2024.streamlit.app)
